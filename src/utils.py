@@ -9,8 +9,8 @@ def plot_decision_boundary(x_real, y, w, b, acc, epoch, save_path=None):
     class1 = x_real[y == 1]
 
     plt.figure(figsize=(8, 6))
-    plt.scatter(class0[:, 0], class0[:, 1], color='red', label='Benign (0)')
-    plt.scatter(class1[:, 0], class1[:, 1], color='blue', label='Malignant (1)')
+    plt.scatter(class0[:, 0], class0[:, 1], color='red', label='Negative-result')
+    plt.scatter(class1[:, 0], class1[:, 1], color='blue', label='Positive-result')
 
     # only first two features used for visualization
     x1 = np.linspace(np.min(x_real[:, 0]), np.max(x_real[:, 0]), 100)
@@ -34,8 +34,8 @@ def plot_svm_boundary(x, y, w, b, acc, epoch, save_path=None):
     class1 = x[y == 1]
 
     plt.figure(figsize=(10, 7))
-    plt.scatter(class0[:, 0], class0[:, 1], color='red', s=60, label='Benign (0)', alpha=0.7, edgecolors='white', linewidth=0.5)
-    plt.scatter(class1[:, 0], class1[:, 1], color='blue', s=60, label='Malignant (1)', alpha=0.7, edgecolors='white', linewidth=0.5)
+    plt.scatter(class0[:, 0], class0[:, 1], color='red', s=60, label='Negative-result', alpha=0.7, edgecolors='white', linewidth=0.5)
+    plt.scatter(class1[:, 0], class1[:, 1], color='blue', s=60, label='Positive-result', alpha=0.7, edgecolors='white', linewidth=0.5)
 
     padding = 0.1
     x_min, x_max = x[:, 0].min(), x[:, 0].max()

@@ -1,4 +1,13 @@
-from .data_loader import load_data
-from .perceptron import train_perceptron
-from .svm import train_svm
-from .utils import plot_decision_boundary, compute_accuracy
+from .data_loader import DataLoader
+from .perceptron import Perceptron
+from .svm import SVM
+from .utils import plot_decision_boundary, plot_svm_boundary, compute_accuracy
+
+__all__ = [
+    'DataLoader',
+    'Perceptron',
+    'SVM',
+    'plot_decision_boundary',
+    'plot_svm_boundary',
+    'compute_accuracy'
+]

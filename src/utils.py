@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-
+from mpl_toolkits.mplot3d import Axes3D
 def compute_accuracy(y_true, y_pred):
     return np.mean(y_true == y_pred) * 100
 
@@ -12,7 +12,6 @@ def plot_decision_boundary(x_real, y, w, b, acc, epoch, save_path=None):
     plt.scatter(class0[:, 0], class0[:, 1], color='red', label='Negative-result')
     plt.scatter(class1[:, 0], class1[:, 1], color='blue', label='Positive-result')
 
-    # only first two features used for visualization
     x1 = np.linspace(np.min(x_real[:, 0]), np.max(x_real[:, 0]), 100)
     x2 = (-w[0] * x1 - b) / w[1]
     plt.plot(x1, x2, color='green', linewidth=2, label='Decision Boundary')
@@ -28,48 +27,34 @@ def plot_decision_boundary(x_real, y, w, b, acc, epoch, save_path=None):
     plt.show()
 
 
-def plot_svm_boundary(x, y, w, b, acc, epoch, save_path=None):
-
-    class0 = x[y == 0]
-    class1 = x[y == 1]
-
-    plt.figure(figsize=(10, 7))
-    plt.scatter(class0[:, 0], class0[:, 1], color='red', s=60, label='Negative-result', alpha=0.7, edgecolors='white', linewidth=0.5)
-    plt.scatter(class1[:, 0], class1[:, 1], color='blue', s=60, label='Positive-result', alpha=0.7, edgecolors='white', linewidth=0.5)
-
-    padding = 0.1
-    x_min, x_max = x[:, 0].min(), x[:, 0].max()
-    y_min, y_max = x[:, 1].min(), x[:, 1].max()
-    x_min -= padding * (x_max - x_min)
-    x_max += padding * (x_max - x_min)
-    y_min -= padding * (y_max - y_min)
-    y_max += padding * (y_max - y_min)
+def plot_svm_boundary(X, y, w, b, accuracy, epoch, support_vectors=None, save_path=None):
+    class0 = X[y == 0]
+    class1 = X[y == 1]
     
-    xx, yy = np.meshgrid(
-        np.linspace(x_min, x_max, 300),
-        np.linspace(y_min, y_max, 300)
-    )
+    plt.figure(figsize=(8, 6))
+    plt.scatter(class0[:, 0], class0[:, 1], color='red', label='Negative-result')
+    plt.scatter(class1[:, 0], class1[:, 1], color='blue', label='Positive-result')
     
-    zz = w[0] * xx + w[1] * yy + b
+    x1 = np.linspace(np.min(X[:, 0]), np.max(X[:, 0]), 100)
+    x2_decision = (-w[0] * x1 - b) / w[1]
+    x2_margin_neg = (-w[0] * x1 - b - 1) / w[1]
+    x2_margin_pos = (-w[0] * x1 - b + 1) / w[1]
     
-    plt.contour(xx, yy, zz, 
-                levels=[-1.0, 0.0, 1.0], 
-                colors=['#FF9500', '#00FF00', '#8E44AD'],  # Orange, Green, Purple
-                linewidths=[2, 4, 2],
-                linestyles=['--', '-', '--'])
-
-    plt.plot([], [], color='#FF9500', ls='--', lw=2, label='Support Margin (-1)')
-    plt.plot([], [], color='#00FF00', ls='-', lw=4, label='Decision Boundary (0)')
-    plt.plot([], [], color='#8E44AD', ls='--', lw=2, label='Support Margin (+1)')
-
-    plt.xlabel('Feature 1 (Scaled)', fontsize=12, fontweight='bold')
-    plt.ylabel('Feature 2 (Scaled)', fontsize=12, fontweight='bold')
-    plt.title(f'SVM Decision Boundary **+ Margins**\n(Acc: {acc:.2f}% @ Epoch {epoch})', 
-              fontsize=14, fontweight='bold', pad=20)
-    plt.legend(loc='upper right', frameon=True, fancybox=True, shadow=True)
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-
+    plt.plot(x1, x2_decision, color='green', linewidth=2, label='Decision Boundary')
+    plt.plot(x1, x2_margin_neg, color='orange', linestyle='--', linewidth=2, label='Margin (-1)')
+    plt.plot(x1, x2_margin_pos, color='purple', linestyle='--', linewidth=2, label='Margin (+1)')
+    
+    if support_vectors is not None and len(support_vectors) > 0:
+        plt.scatter(support_vectors[:, 0], support_vectors[:, 1], 
+                   s=200, facecolors='none', edgecolors='black', 
+                   linewidths=3, label=f'Support Vectors ({len(support_vectors)})')
+    
+    plt.xlabel('Feature 1')
+    plt.ylabel('Feature 2')
+    plt.title(f'SVM Decision Boundary (Acc: {accuracy:.2f}% @ Epoch {epoch})')
+    plt.legend()
+    plt.grid(True)
+    
     if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight', facecolor='white')
+        plt.savefig(save_path, dpi=300)
     plt.show()

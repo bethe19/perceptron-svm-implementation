@@ -32,18 +32,19 @@ class Perceptron:
                     self.b += self.learning_rate * (yi - y_pred)
                     misclassified_count += 1
             
-            accuracy = (len(X) - misclassified_count) / len(X) * 100
-            
+            training_accuracy = (len(X) - misclassified_count) / len(X) * 100
+
+            y_pred_final = self.predict(X)
+            model_accuracy = np.mean(y_pred_final == y) * 100
             if verbose:
-                print(f"Epoch {epoch}, Accuracy: {accuracy:.2f}%")
-            
-            if accuracy > self.max_accuracy:
+                print(f"Epoch {epoch} | Train Pass: {training_accuracy:.2f}% | Model: {model_accuracy:.2f}%")
+            if model_accuracy > self.max_accuracy:
                 self.best_weights = np.copy(self.w)
                 self.best_bias = self.b
-                self.max_accuracy = accuracy
+                self.max_accuracy = model_accuracy
                 self.best_epoch = epoch
-            
-            if accuracy == 100:
+
+            if model_accuracy == 100:
                 if verbose:
                     print("All points classified correctly. Stopping early.")
                 break

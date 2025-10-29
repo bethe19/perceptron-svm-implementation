@@ -7,10 +7,9 @@ from sklearn.model_selection import train_test_split
 
 def perceptron():
     data_loader = DataLoader(
-        file_path="data/data.csv",
-        target_column='Result',
-        positive_label='Pass',
-        negative_label='Fail'
+        file_path="data/bank_credit_approval.csv",
+        target_column='approved',
+        drop_columns=['applicant_id'],
     )
     x_scaled, y, x_real = data_loader.load()
     
@@ -49,18 +48,17 @@ def perceptron():
     print("\nVisualizing...")
     plot_decision_boundary(
         x_scaled[:, :2], y, w[:2], b, test_acc, epoch,
-        save_path="imgs/perceptron_diabetes.png"
+        save_path="imgs/perceptron_model.png"
     )
     
-    return train_acc, test_acc
+    return w, b, train_acc, test_acc
 
 
-def svm(reg_param=0.01, max_epoch=50, save_plot=None):
+def svm(lambda_param=0.01, max_epoch=50, save_plot=None, initial_w=None, initial_b=None):
     data_loader = DataLoader(
-        file_path="data/data.csv",
-        target_column='Result',
-        positive_label='Pass',
-        negative_label='Fail'
+        file_path="data/bank_credit_approval.csv",
+        target_column='approved',
+        drop_columns=['applicant_id'],
     )
     x_scaled, y, x_real = data_loader.load()
     
@@ -71,17 +69,18 @@ def svm(reg_param=0.01, max_epoch=50, save_plot=None):
     print(f"Dataset: {len(y)} samples, {x_scaled.shape[1]} features")
     print(f"Training set: {len(y_train)} samples")
     print(f"Test set: {len(y_test)} samples")
-    print(f"Hyperparams: reg_param={reg_param}, max_epoch={max_epoch}")
+    print(f"Hyperparams: lambda_param={lambda_param}, max_epoch={max_epoch}")
     
     print("\nTraining SVM...")
-    model = SVM(learning_rate=1.0, reg_param=reg_param, max_epoch=max_epoch)
-    model.fit(X_train, y_train, verbose=True)
+    model = SVM(learning_rate=0.001, lambda_param=lambda_param, max_epoch=max_epoch)
+    model.fit(X_train, y_train, initial_w=initial_w, initial_b=initial_b, verbose=True)
     
     params = model.get_params()
     w = params['weights']
     b = params['bias']
     train_acc = params['accuracy']
     epoch = params['epoch']
+    support_vectors = params['support_vectors']
     
     test_acc = model.score(X_test, y_test)
     
@@ -91,6 +90,7 @@ def svm(reg_param=0.01, max_epoch=50, save_plot=None):
     print(f"Training Accuracy:   {train_acc:.2f}%")
     print(f"Test Accuracy:       {test_acc:.2f}%")
     print(f"Best Epoch:          {epoch}")
+    print(f"Number of Support Vectors: {len(support_vectors) if support_vectors is not None else 0}")
     print(f"Status:              {'Perfect!' if test_acc >= 98 else 'Excellent!' if test_acc >= 90 else 'Good'}")
     print("="*60)
     
@@ -101,26 +101,29 @@ def svm(reg_param=0.01, max_epoch=50, save_plot=None):
     print("\nVisualizing (Features 1-2, Scaled)...")
     plot_svm_boundary(
         x_scaled[:, :2], y, w[:2], b, test_acc, epoch,
+        support_vectors=support_vectors[:, :2] if support_vectors is not None else None,
         save_path=save_plot
     )
     
     return w, b, train_acc, test_acc
 
-
 def main():
     print("="*60)
     print("PERCEPTRON CLASSIFICATION")
     print("="*60)
-    perc_train_acc, perc_test_acc = perceptron()
+    w_perc, b_perc, perc_train_acc, perc_test_acc = perceptron()
     
     print("\n\n" + "="*60)
-    print("SVM CLASSIFICATION")
+    print("SVM CLASSIFICATION (Using Perceptron warm-start)")
     print("="*60)
     w_svm, b_svm, svm_train_acc, svm_test_acc = svm(
-        reg_param=0.01,
+        lambda_param=0.01,
         max_epoch=100,
-        save_plot="imgs/svm_diabetes.png"
+        save_plot="imgs/svm_model.png",
+        initial_w=w_perc,
+        initial_b=b_perc
     )
+
     
     print("\n\n" + "="*60)
     print("COMPARISON SUMMARY")
@@ -134,3 +137,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
